@@ -18,7 +18,12 @@
 
 package org.fdh.day01;
 
+import org.apache.flink.api.common.functions.FlatMapFunction;
+import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.util.Collector;
 
 /**
  * Skeleton for a Flink Streaming Job.
@@ -34,31 +39,50 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
  */
 public class StreamingJob {
 
-	public static void main(String[] args) throws Exception {
-		// set up the streaming execution environment
-		final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+    public static void main(String[] args) throws Exception {
+        // set up the streaming execution environment
+        final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
 
-		/*
-		 * Here, you can start creating your execution plan for Flink.
-		 *
-		 * Start with getting some data from the environment, like
-		 * 	env.readTextFile(textPath);
-		 *
-		 * then, transform the resulting DataStream<String> using operations
-		 * like
-		 * 	.filter()
-		 * 	.flatMap()
-		 * 	.join()
-		 * 	.coGroup()
-		 *
-		 * and many more.
-		 * Have a look at the programming guide for the Java API:
-		 *
-		 * https://flink.apache.org/docs/latest/apis/streaming/index.html
-		 *
-		 */
+        /*
+         * Here, you can start creating your execution plan for Flink.
+         *
+         * Start with getting some data from the environment, like
+         * 	env.readTextFile(textPath);
+         *
+         * then, transform the resulting DataStream<String> using operations
+         * like
+         * 	.filter()
+         * 	.flatMap()
+         * 	.join()
+         * 	.coGroup()
+         *
+         * and many more.
+         * Have a look at the programming guide for the Java API:
+         *
+         * https://flink.apache.org/docs/latest/apis/streaming/index.html
+         *
+         */
 
-		// execute program
-		env.execute("Flink Streaming Java API Skeleton");
-	}
+
+        DataStream<Tuple2<String, Integer>> dataStream = env
+                .socketTextStream("10.11.100.66", 9999, "\n")
+                .flatMap(new Splitters())
+                .keyBy(value -> value.f0)
+                .timeWindow(Time.seconds(5))
+                .sum(1);
+        dataStream.print();
+
+        env.execute("Window WordCount");
+    }
+
+    public static class Splitters implements FlatMapFunction<String, Tuple2<String, Integer>> {
+        @Override
+        public void flatMap(String s, Collector<Tuple2<String, Integer>> collector) throws Exception {
+
+            for (String word : s.split(" ")) {
+                collector.collect(new Tuple2<String, Integer>(word, 1));
+            }
+        }
+    }
+
 }
