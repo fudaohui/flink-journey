@@ -10,4 +10,5 @@ package org.fdh.day01;
 public interface AddInterface<T> {
 
     T add(T a, T b);
+
 }
