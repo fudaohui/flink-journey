@@ -59,6 +59,8 @@ public class StreamingJob {
 
         SingleOutputStreamOperator<String> functionDataStream = dataStream.map(new DoubleMapFunction());
         functionDataStream.print();
+        SingleOutputStreamOperator<Integer> filter = dataStream.filter(input -> input >= 4);
+        filter.print();
         env.execute("lambda test");
     }
 }
