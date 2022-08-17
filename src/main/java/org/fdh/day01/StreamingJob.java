@@ -20,6 +20,8 @@ package org.fdh.day01;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.configuration.Configuration;
+import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -42,7 +44,14 @@ public class StreamingJob {
 
     public static void main(String[] args) throws Exception {
         // set up the streaming execution environment
-        final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+//        final StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
+        // 访问http://localhost:8082 可以看到Flink WebUI
+        //本地idea开发工具调试方便，部署到集群中不需要
+        Configuration conf = new Configuration();
+        conf.setInteger(RestOptions.PORT, 8082);
+        // 设置本地执行环境，并行度为2
+        final StreamExecutionEnvironment env = StreamExecutionEnvironment.createLocalEnvironment(2, conf);
         env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime);
         /*
          * Here, you can start creating your execution plan for Flink.
