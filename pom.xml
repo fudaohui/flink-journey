@@ -163,7 +163,7 @@ under the License.
 							</filters>
 							<transformers>
 								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-									<mainClass>org.fdh.day02.StreamingJob</mainClass>
+									<mainClass>org.fdh.day03.StockPriceDemo</mainClass>
 								</transformer>
 							</transformers>
 						</configuration>

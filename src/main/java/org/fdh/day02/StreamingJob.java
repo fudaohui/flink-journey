@@ -21,12 +21,14 @@ package org.fdh.day02;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.flink.api.common.functions.FlatMapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
+import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.RestOptions;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.time.Time;
@@ -90,21 +92,30 @@ public class StreamingJob {
 //
 //        env.execute("max");
         //4、reduce
-        env.fromElements(Score.of("Li", "English", 90),
-                        Score.of("Wang", "English", 88),
-                        Score.of("Li", "Math", 85),
-                        Score.of("Wang", "Math", 92),
-                        Score.of("Liu", "Math", 91),
-                        Score.of("Liu", "English", 87))
-                .keyBy("name")
-//                .reduce(new MyReduceFunction())
-                .reduce((input1, input2) -> Score.of(input1.name, "Sum", input1.score + input2.score))
-                //对reduce算子单独设置并行度
-                .setParallelism(2)
+//        env.fromElements(Score.of("Li", "English", 90),
+//                        Score.of("Wang", "English", 88),
+//                        Score.of("Li", "Math", 85),
+//                        Score.of("Wang", "Math", 92),
+//                        Score.of("Liu", "Math", 91),
+//                        Score.of("Liu", "English", 87))
+//                .keyBy("name")
+////                .reduce(new MyReduceFunction())
+//                .reduce((input1, input2) -> Score.of(input1.name, "Sum", input1.score + input2.score))
+//                //对reduce算子单独设置并行度
+//                .setParallelism(2)
+//                .print();
+//        env.execute("reduce");
+        DataStreamSource<String> dataStream = env.fromElements("hello flink", "test me");
+        dataStream.flatMap((String input, Collector<String> collector) -> {
+                    for (String word : input.split(" ")) {
+                        collector.collect(word);
+                    }
+                })
+                .returns(Types.STRING)
                 .print();
-        env.execute("reduce");
-
-
+        env.execute("ttt");
+        // 提供类型信息以解决类型擦除问题
+//                .returns(Types.STRING);
     }
 
     public static class MyReduceFunction implements ReduceFunction<Score> {
