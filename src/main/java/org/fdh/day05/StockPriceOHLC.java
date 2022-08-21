@@ -2,11 +2,9 @@ package org.fdh.day05;
 
 
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
-import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.fdh.day03.StockSourceFunction;
 import org.fdh.pojo.StockPrice;
@@ -31,7 +29,12 @@ public class StockPriceOHLC {
         inputStream.keyBy(input -> input.symbol)
 //                .timeWindow(Time.minutes(1))
                 .window(TumblingEventTimeWindows.of(Time.minutes(1)))
-                .process(new OHLCProcessFunction())
+                //reduce 和aggregates属于增量计算，每来一个新数据，将窗口内中间数据和新数据一块处理，在保存到窗口中，
+//                .reduce((in1, midlle) -> StockPrice.of(in1.symbol, in1.price + midlle.price, midlle.ts, in1.volume + midlle.volume))
+                //proces属于窗口内数据全量计算
+//                .process(new OHLCProcessFunction())
+                //功能比reduceFunction更强大
+                .aggregate(new AverageAggregateFunction())
                 .print();
 
         env.execute("1-minutes stock price");
